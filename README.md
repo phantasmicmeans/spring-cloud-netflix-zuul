@@ -1,10 +1,18 @@
-Spring Boot Microservice with Spring Cloud Netflix
+Spring Cloud Netflix Zuul
 ==============
 
 *by S.M.Lee*
 
 ![image](https://user-images.githubusercontent.com/20153890/41583901-d1e8aa5c-73e0-11e8-97ff-188fed3cd715.png)
 
+구성 -> 
+
+1. API Gateway(인증, 로깅, 다이나믹라우팅 등)
+2. Zuul의 특징
+3. Ribbon 
+4. Netflix Eureka + Ribbon + Hystrix 결합을 이용한 DynamicRouting 
+
+Netflix의 API Gateway인 Zuul은 
 
 > **NOTE** 
 &nbsp;

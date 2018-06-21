@@ -5,14 +5,67 @@ Spring Cloud Netflix Zuul
 
 ![image](https://user-images.githubusercontent.com/20153890/41583901-d1e8aa5c-73e0-11e8-97ff-188fed3cd715.png)
 
-구성 -> 
 
+대용량 웹 서비스가 증가함에 따라 Microservice Architecture는 선택이 아니라 필수가 되어가고 있다. 기존 Monolithic Architecture와는 달리 Microservice Architecture는 작은 Microservice 단위로 나누어 시스템을 구축한다. 이러한 Microservice는 보통 하나 혹은 여러개의 API로 개발된다. 그렇다면 Microservice가 수백개 혹은 수천개까지 증가하면 이를 어떻게 관리해야 할까? API Gateway는 수많은 백단의 API Server들의 Endpoint들을 단일화 하고, Authentication, Logging, Monitoring, Routing 등 여러 역할 을 수행 할 수 있다. 
+
+물론 Netflix의 Zuul은 이러한 기능들을 전부 제공하고 있다. Netflix의 Zuul뿐만 아니라 다른 API Gateway를 사용해도 앞서 말한 기능들을 제공받을 수 있을것이다.
+
+하지만 Netflix의 Zuul은 다른 Netflix OSS의 Component들과 결합이 되었을 때 활용도가 증가한다. 
+이 중 가장 매력적인 것은 Client Side Loadbalancer인 Ribbon + Service Discovery & Registry인 Eureka + Circuit Breaker인 Hystrix 조합을 활용한 Dynamic Routing이지 않을까 싶다. 따라서 여기서는 Dynamic Routing에 중점을 맞추고 튜토리얼을 진행해 볼 예정이다. 
+
+Ribbon, Eureka, Hystrix에 대한 이해가 부족하다면 다음을 참고하자.
+
+
+## 1. Dynamic Routing이란?
+
+
+
+
+## 2. 
 1. API Gateway(인증, 로깅, 다이나믹라우팅 등)
 2. Zuul의 특징
 3. Ribbon 
 4. Netflix Eureka + Ribbon + Hystrix 결합을 이용한 DynamicRouting 
 
 Netflix의 API Gateway인 Zuul은 
+
+
+zuul:
+    ignored-service: "*" 
+    prefix: /api
+    routes:
+        story-service:
+            path: /story/**
+            serviceId: story-service
+            stripPrefix: false
+    
+hystrix:
+  command:
+    story-service:
+      execution:
+        isolation:
+          thread:
+            timeoutInMilliseconds: 10000
+
+story-service:
+    ribbon: 
+        eureka:
+            enabled: true
+        NIWSServerListClassName: com.netflix.niws.loadbalancer.DiscoveryEnabledNIWSServerList
+        MaxTotalHttpConnections: 500
+        MaxConnectionsPerHost: 100
+    
+
+
+eureka:
+    client:
+        healthcheck: true 
+        fetch-registry: true
+        serviceUrl:
+            defaultZone: ${vcap.services.eureka-service.credentials.uri:http://{Your-Eureka-Server-Address}:8761}/eureka/
+        instance:
+            instance-id: ${spring.application.name}:${spring.application.instance_id:${random.value}}
+            perferIpAddress: true
 
 > **NOTE** 
 &nbsp;

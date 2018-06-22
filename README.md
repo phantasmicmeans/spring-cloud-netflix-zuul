@@ -34,6 +34,9 @@ API Gateway는 수많은 백단의 API Server들의 Endpoint들을 단일화 하
 
 2,3번은 각자 다른 서버에 배포되는 같은 서비스이다. Eureka Server는 1,2,3번 Server중 하나를 이용해 구축해도 된다. 
 
+(Eureka Server 구축은 다음을 참고하자)
+* Spring-Cloud-Netflix-Eureka-Tutorial => https://github.com/phantasmicmeans/Spring-Cloud-Netflix-Eureka-Tutorial
+
 그럼 먼저 API Gateway를 준비해보자.
 
 # API Gateway - Zuul 
@@ -176,15 +179,52 @@ eureka:
             perferIpAddress: true
 ```
 
-이 부분은 Zuul 또한 Eureka Client로 등록하는 부분이다. 이것으로 Dynamic Routing을 위한 준비는 끝났다. 
-
-이제 Microservice(Spring boot application)를 남은 2개의 서버에서 실행하자.  
+이 부분은 Zuul 또한 Eureka Client로 등록하는 부분이다.
 
 
-Host OS에 설치된 maven을 이용해도 되고, spring boot application의 maven wrapper를 사용해도 된다
-(maven wrapper는 Linux, OSX, Windows, Solaris 등 서로 다른 OS에서도 동작한다. 따라서 추후에 여러 서비스들을 Jenkins에서 build 할 때 각 서비스들의 Maven version을 맞출 필요가 없다.)
+# Microservice 
 
-*A Quick Guide to Maven Wrapper => http://www.baeldung.com/maven-wrapper)*
+이제 소스코드에서 spring-cloud-netflix-eureka-client directory에 담겨있는 Microservice(Spring boot application)를 남은 2개의 서버로 각각 가져가서 실행하자. 이 Microservice는 REST API Server로 구축된다. Service에 대한 명세는 다음과 같다. 
+
+# REST API Server 
+
+**REST API**
+
+METHOD | PATH | DESCRIPTION 
+------------|-----|------------
+GET | /storys | Hostname Check(Loadbalancing이 되고 있음을 확인하기 위함)
+GET | /story | 전체 stroy 중 최근 10개 제공 
+GET | /story/{id} | 해당 id를 가진 user에 대한 story 제공 
+POST | /story | story 정보 입력
+DELETE | /story/{id} | 해당 id를 가진 user에 대한 story 삭제 
+
+&nbsp;
+
+
+**Table(table name = story) description**
+
+| Field       | Type        | Null | Key | Default | Extra          |
+--------------|-------------|------|-----|---------|----------------|
+| story_id    | int(11)     | NO   | PRI | NULL    | auto_increment |
+| ID          | varchar(20) | NO   |     | NULL    |                |
+| message     | varchar(300) | NO   |     | NULL    |                |
+*5.6.40 MySQL Community Server
+
+DB Server 세팅은 Microservice가 배치 될 어느곳에 해도 상관 없다. 
+
+이 외에도 REST API Server 구축, 실행 방법에 관한 정보는 다음을 참고하면 된다.
+
+* Spring-Boot-Microservice-with-Spring-Cloud-Netflix => https://github.com/phantasmicmeans/Spring-Boot-Microservice-with-Spring-Cloud-Netflix/
+
+
+# Dynamic Routing 
+
+Eureka Server, API Gateway, Microservice가 전부 준비 되면 실제로 Dynamic Routing, ClientSide Loadbalancing 이 되는지 확인해 보자.
+
+일단 Eureka Registry에 Gateway와 2개의 Microservice가 잘 등록 되었는지 보자.
+
+
+위 과정을 거쳐서 Eureka Server 
 
 **a. Host OS의 maven 이용**
 

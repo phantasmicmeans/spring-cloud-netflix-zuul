@@ -227,6 +227,8 @@ DB Server 세팅은 Microservice가 배치 될 어느곳에 해도 상관 없다
 Eureka Server, API Gateway, Microservice가 전부 준비 되면 실제로 Dynamic Routing, Client Side Loadbalancing 이 되는지 확인해야 한다.
 일단 Eureka Registry에 Gateway와 2개의 Microservice가 잘 등록 되었는지 보자.
 
+## Check Eureka
+
 * https://{Your-Eureka-Server-Address}:8761/
 &nbsp;
 
@@ -236,16 +238,22 @@ Zuul 그리고 application.name이 story-service인 Microservice가 2개가 Regi
 
 &nbsp;
 
+이번에는 Eureka Registry에 등록된 Client들의 정보를 확인해보자. 
+
 * https://{Your-Eureka-Server-Address}:8761/eureka/apps
 &nbsp;
 
 ![image](https://user-images.githubusercontent.com/20153890/41764911-7db6ba0a-763d-11e8-8240-1f8155160ada.png)
 
-Eureka Client의 정보를 확인해보자. STORY-SERVICE인 instance가 2개 존재한다. 같은 service이지만 instanceId가 다르다. hostname도 각각의 ip Address를 사용하고 있다. 
+STORY-SERVICE인 instance가 2개 존재한다. 같은 service이지만 instanceId가 다르다. hostname도 각각의 ip Address를 사용하고 있다. 
+
+
+## Curl
 
 우리의 Loadbalancer인 Ribbon에는 이 story-service에 대한 Server List가 없다. 하지만 Eureka Registry에는 story-service에 대한 정보가 들어있다. 준비는 모두 끝났고 Client Side에서 Loadbalancing을 진행하며 Dynamic하게 Routing 할 일만 남았다.
 
-그럼 로컬에서 API Gateway가 실행중인 aws ec2 server에 curl을 날려보자
+그럼 local에서 API Gateway가 실행중인 Server에 curl을 날려보자
+&nbsp;
 
 ```sh	
 sangmin@Mint-SM ~ $ curl -X GET http://13.125.247.1**:4000/api/story-service/storys
@@ -263,13 +271,19 @@ micro-service2
 
 Dynamic Routing 뿐만 아니라 Microservice가 실행되고 있는 각 Server의 hostname이 Load balancing되며 출력 되는 모습을 볼 수 있다. 
 
-그럼 앞에서 설명했던 Hystrix Dashboard를 들어가보자.
+&nbsp;
 
+## Hystrix Dashboard 
+
+그럼 앞에서 설명했던 Hystrix Dashboard를 들어가보자.
+&nbsp;
+
+* https://{Your-Zuul-Address}:4000/hystrix
 ![image](https://user-images.githubusercontent.com/20153890/41768328-db7c95de-7646-11e8-82f8-8a5295ed5c61.png)
 
 
-* https://{Your-Zuul-Address}:4000/hystrix
-![image](https://user-images.githubusercontent.com/20153890/41766219-5bf02f2e-7641-11e8-8108-fa235f1d17bc.png)
+
+
 
 위 처럼 Hystrix Dashboard 하단의 Input box에 https://{Your-Zuul-Address}:4000/hystrix.stream, 그리고 아래 Delay를 입력하자.
 

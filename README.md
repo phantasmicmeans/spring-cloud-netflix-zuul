@@ -152,18 +152,19 @@ story-service:
         eureka:
             enabled: true
         NIWSServerListClassName: com.netflix.niws.loadbalancer.DiscoveryEnabledNIWSServerList
-	#ConnectTimeout: 3000
-	#ReadTimeout: 3000
         MaxTotalHttpConnections: 500
         MaxConnectionsPerHost: 100
 ```
 
 위의 zuul.routes.story-service는 아래 story-service에서 정의된다. 그리고 이 story-service의 Server List는 Ribbon을 이용해 찾는다. 이 부분을 잘 봐야 한다. 
-그렇다면 이 Ribbon은 story-service가 있는 Server List들을 어디서 가져올까? 분명 yaml파일을 전부 뒤져봐도 Server List는 찾아볼 수 없다. 그렇다면 지금부터 일일이 Server List를 등록해줘야 할까? 아니다. 앞서 설명했듯이 Eureka Registry로부터 story-service가 실행 중인 Server List를 가져오면 된다. 이렇게 되면 Loadbalancer인 Ribbon에 Server List를 추가할 필요가 없다. **NIWSServerListClassName: com.netflix.niws.loadbalancer.DiscoveryEnabledNIWSServerList** 를 이용해 Eureka 정보를 사용하면 된다는 얘기이다.
+그렇다면 이 Ribbon은 story-service가 있는 Server List들을 어디서 가져올까? 분명 yaml파일을 전부 뒤져봐도 Server List는 찾아볼 수 없다. 그렇다면 지금부터 일일이 Server List를 등록해줘야 할까? 아니다. 앞서 설명했듯이 Eureka Registry로부터 story-service가 실행 중인 Server List를 가져오면 된다. 이렇게 되면 Loadbalancer인 Ribbon에 Server List를 추가할 필요가 없다. 
+**NIWSServerListClassName: com.netflix.niws.loadbalancer.DiscoveryEnabledNIWSServerList** 를 이용해 Eureka 정보를 사용하면 된다는 얘기이다.
 
 **참고**
+
 hystrix.command...timeoutInMilliseconds는 Ribbon의 각 timeout보다 커야 잘 동작한다. 
 (RibbonHystrixTimeoutException, Ribbon의 TimeooutException에 대해서는 더 알아봐야 한다.. 다음을 참고하자)
+
 "Zuul, Ribbon and Hystrix timeout confusion" => https://github.com/spring-cloud/spring-cloud-netflix/issues/2606
 
 그리고 ThreadPool, Isolation.. 이 부분 또한 더 알아봐야 한다..
@@ -213,9 +214,9 @@ DELETE | /story/{id} | 해당 id를 가진 user에 대한 story 삭제
 
 *5.6.40 MySQL Community Server*
 
-DB Server 세팅은 Microservice가 배치 될 어느곳에 해도 상관 없다. 
+&nbsp;
 
-이 외에도 REST API Server 구축, 실행 방법에 관한 정보는 다음을 참고하면 된다.
+DB Server 세팅은 Microservice가 배치 될 어느곳에 해도 상관 없다. 이 외에도 REST API Server 구축, 실행 방법에 관한 정보는 다음을 참고하면 된다.
 
 * Spring-Boot-Microservice-with-Spring-Cloud-Netflix => https://github.com/phantasmicmeans/Spring-Boot-Microservice-with-Spring-Cloud-Netflix/
 
@@ -227,6 +228,8 @@ Eureka Server, API Gateway, Microservice가 전부 준비 되면 실제로 Dynam
 일단 Eureka Registry에 Gateway와 2개의 Microservice가 잘 등록 되었는지 보자.
 
 * https://{Your-Eureka-Server-Address}:8761/
+&nbsp;
+
 ![image](https://user-images.githubusercontent.com/20153890/41764741-043a23ec-763d-11e8-9550-32bb5896b549.png)
 
 Zuul 그리고 application.name이 story-service인 Microservice가 2개가 Registry에 등록된 것을 볼 수 있다.
@@ -234,6 +237,8 @@ Zuul 그리고 application.name이 story-service인 Microservice가 2개가 Regi
 &nbsp;
 
 * https://{Your-Eureka-Server-Address}:8761/eureka/apps
+&nbsp;
+
 ![image](https://user-images.githubusercontent.com/20153890/41764911-7db6ba0a-763d-11e8-8240-1f8155160ada.png)
 
 Eureka Client의 정보를 확인해보자. STORY-SERVICE인 instance가 2개 존재한다. 같은 service이지만 instanceId가 다르다. hostname도 각각의 ip Address를 사용하고 있다. 
@@ -259,6 +264,9 @@ micro-service2
 Dynamic Routing 뿐만 아니라 Microservice가 실행되고 있는 각 Server의 hostname이 Load balancing되며 출력 되는 모습을 볼 수 있다. 
 
 그럼 앞에서 설명했던 Hystrix Dashboard를 들어가보자.
+
+![image](https://user-images.githubusercontent.com/20153890/41768328-db7c95de-7646-11e8-82f8-8a5295ed5c61.png)
+
 
 * https://{Your-Zuul-Address}:4000/hystrix
 ![image](https://user-images.githubusercontent.com/20153890/41766219-5bf02f2e-7641-11e8-8108-fa235f1d17bc.png)

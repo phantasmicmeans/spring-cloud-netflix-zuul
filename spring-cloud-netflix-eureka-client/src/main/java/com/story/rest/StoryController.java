@@ -54,7 +54,7 @@ public class StoryController {
 	@Autowired
 	StoryService storyService;
     
-    @HystrixCommand(commandKey="story-hostname", fallbackMethod = "getHostNameFallback")
+    @HystrixCommand(commandKey="story-service", fallbackMethod = "getHostNameFallback")
     @RequestMapping(value = "/storys", method = RequestMethod.GET)
     public String checkHost()
     {
@@ -76,7 +76,7 @@ public class StoryController {
         return "HHHHHHHHH";
     }
 
-	@HystrixCommand(commandKey = "story-get", fallbackMethod = "getAllStoryFallback")
+	@HystrixCommand(commandKey = "story-service", fallbackMethod = "getAllStoryFallback")
 	@RequestMapping(value = "/story", method = RequestMethod.GET)
 	public ResponseEntity<List<Story>> getAllStory()
 	{

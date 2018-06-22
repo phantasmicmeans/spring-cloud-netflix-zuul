@@ -1,0 +1,51 @@
+zuul:
+    ribbonIsolationStrategy: THREAD
+    threadPool:
+        useSeparateThreadPools: true
+    ignored-service: "*" 
+    prefix: /api
+    routes:
+        story-service:
+            path: /story/**
+            serviceId: story-service
+            stripPrefix: false
+
+    
+hystrix:
+    command:
+        story-service:
+            execution:
+                isolation:
+                    strategy: THREAD
+                    thread:
+                        timeoutInMilliseconds: 20000
+
+
+            
+
+story-service:
+    ribbon: 
+        eureka:
+            enabled: true
+        NIWSServerListClassName: com.netflix.niws.loadbalancer.DiscoveryEnabledNIWSServerList
+        ConnectTimeout: 5000
+        ReadTimeout: 5000
+
+        MaxTotalHttpConnections: 500
+        MaxConnectionsPerHost: 100
+    
+
+
+eureka:
+    client:
+        healthcheck: true 
+        fetch-registry: true
+        serviceUrl:
+            defaultZone: ${vcap.services.eureka-service.credentials.uri:http://13.209.76.2:8761}/eureka/
+        instance:
+            instance-id: ${spring.application.name}:${spring.application.instance_id:${random.value}}
+            perferIpAddress: true
+
+server:
+  port: 4000
+ 

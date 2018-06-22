@@ -1,6 +1,0 @@
-/home/centos/spring-cloud-netflix-zuul/spring-cloud-netflix-eureka-client/src/main/java/com/story/repository/StoryRepository.java
-/home/centos/spring-cloud-netflix-zuul/spring-cloud-netflix-eureka-client/src/main/java/com/story/StoryserviceApplication.java
-/home/centos/spring-cloud-netflix-zuul/spring-cloud-netflix-eureka-client/src/main/java/com/story/service/StoryService.java
-/home/centos/spring-cloud-netflix-zuul/spring-cloud-netflix-eureka-client/src/main/java/com/story/rest/StoryController.java
-/home/centos/spring-cloud-netflix-zuul/spring-cloud-netflix-eureka-client/src/main/java/com/story/service/StoryServiceImpl.java
-/home/centos/spring-cloud-netflix-zuul/spring-cloud-netflix-eureka-client/src/main/java/com/story/domain/Story.java

@@ -102,7 +102,7 @@ EurekaClient로 만들기 위해 @EnableEurekaClient annotataion, 그리고 Hyst
 
 Hystrix의 장점중 하나는 각 HystrixCommand 에 대해 metric을 수집하는 것이다. Hystrix Dashboard는 각 circuit breaker에 대한 상태를 보여준다. 이를 활용하려면 @EnableHystrixDashboard annotation을 main class에 추가하면 된다. 그리고 ~/hystrix 로 접속 시 각 Hystrix Client들의 상태를 볼 수 있다.
 
-그리고 Zuul의 Embedded ReverseProxy를 위한 @EnableZuulProxy annotation을 추가하면 된다. 이 기능을 사용하면 local call은 적절한 service로 forwarding 된다. 예를 들어 id가 users인 service는 /users의 proxy로 부터 request를 받게 될 것이다. 그리고 이 proxy는 Ribbon을 이용해 인스턴스를 찾는다. 그리고 request를 받는 모든 method는 HystrixCommand가 있어야 한다. 따라서 request 실패는 Hystrix metric에 나타난다.(즉 Hystrix Dashboard에 반영된다는 말)
+그리고 Zuul의 Embedded ReverseProxy를 위한 @EnableZuulProxy annotation을 추가하면 된다. 이 기능을 사용하면 local call은 적절한 service로 forwarding 된다. 예를 들어 id가 users인 service는 /users의 proxy로 부터 request를 받게 될 것이다. 그리고 이 proxy는 Ribbon을 이용해 인스턴스를 찾는다. 
 
 위의 설명이 아직 이해가 안될 수도 있다. 아래에서 다시 나올 내용이니 일단 진행하자.
 
@@ -129,46 +129,82 @@ zuul:
             path: /story/**
             serviceId: story-service
             stripPrefix: false
+    ribbonIsolationStrategy: THREAD
+    threadPool:
+        useSeparateThreadPools: true
 ```
-
-설정 파일을 잘 보면 쉽게 이해할 수 있다. 먼저 ignored-service와 prefix이다.
+설정 파일을 잘 보면 이해할 수 있다. zuul.ribbonIsolationStrategy와 zuul.threadPool은 아래에서 설명하겠다.
+그럼 먼저 ignored-service와 prefix이다.
 
 * ignored-service => zuul의 라우팅 목록 중 story-service를 제외하고는 ignore 한다.*
 * prifix => Zuul에 의해 routing 되는 모든 service의 Endpoint를 /api/~ 로 묶는다.
 
-그리고 zuul의 routing 목록 중  /story(zuul.routes.story-service.path)로 들어오는 Http call은 story-servie(zuul.routes.story-service.serviceId) forwarding 된다. 이 serviceId는 우리가 routing 시킬 Eureka-Client의 serviceId를 입력하면 된다. 그렇다면 5번째 라인의 zuul.routes.story-service는 어디서 정의될까? 이제 아래를 보자.
+zuul의 routing 목록 중  /story(zuul.routes.story-service.path)로 들어오는 Http call은 story-servie(zuul.routes.story-service.serviceId)로 forwarding 된다. 이 serviceId에 우리가 routing 시킬 Eureka-Client의 serviceId를 입력하면 된다. 그렇다면 5번째 라인의 zuul.routes.story-service는 어디서 정의될까? 이제 아래를 보자.
 
 ```yml	
 hystrix:
-  command:
-    story-service:
-      execution:
-        isolation:
-          thread:
-            timeoutInMilliseconds: 10000
-
+    command:
+        story-service:
+            execution:
+                isolation:
+                    strategy: THREAD
+                    thread:
+                        timeoutInMilliseconds: 20000
 story-service:
     ribbon: 
         eureka:
             enabled: true
         NIWSServerListClassName: com.netflix.niws.loadbalancer.DiscoveryEnabledNIWSServerList
+        ConnectTimeout: 5000
+        ReadTimeout: 5000
         MaxTotalHttpConnections: 500
         MaxConnectionsPerHost: 100
+    
+
 ```
 
-위의 zuul.routes.story-service는 아래 story-service에서 정의된다. 그리고 이 story-service의 Server List는 Ribbon을 이용해 찾는다. 이 부분을 잘 봐야 한다. 
+위의 zuul.routes.story-service는 아래 story-service에서 정의된다. 그리고 이 story-service의 Server List는 Ribbon을 이용해 찾는다.  
 그렇다면 이 Ribbon은 story-service가 있는 Server List들을 어디서 가져올까? 분명 yaml파일을 전부 뒤져봐도 Server List는 찾아볼 수 없다. 그렇다면 지금부터 일일이 Server List를 등록해줘야 할까? 아니다. 앞서 설명했듯이 Eureka Registry로부터 story-service가 실행 중인 Server List를 가져오면 된다. 이렇게 되면 Loadbalancer인 Ribbon에 Server List를 추가할 필요가 없다. 
-**NIWSServerListClassName: com.netflix.niws.loadbalancer.DiscoveryEnabledNIWSServerList** 를 이용해 Eureka 정보를 사용하면 된다는 얘기이다.
+**NIWSServerListClassName: com.netflix.niws.loadbalancer.DiscoveryEnabledNIWSServerList** 를 이용해 Eureka 정보를 사용하면 된다는 얘기이다. 
+
+&nbsp;
+
+다음은 위보다 조금 까다로운 Hystrix 부분이다. Hystrix는 Netflix의 Fault tolerance library(Circuit Breaker)라고 했다. 제일 쉽게 설명하면 "한 서비스에 장애가 일어났을때 이를 isolate 시켜 전체 시스템을 보호한다" 라고 말할 수 있다. 그러나 깊게 들어가면 조금 까다롭다.. 하지만 장시간 삽질하며 얻은 결과를 최대한 공유 해보려고 한다..
+
+일단 Isolation을 이해해야 한다. Netflix의 Document는 다음처럼 설명한다. "Hystrix employs the bulkhead pattern to isolate dependencies from each other and to limit concurrent access to any one of them." 결국 서비스간에 의존성을 제한하고 격리하겠단 얘기로 보인다.
+
+Hystrix는 Thread & Thread Pool, 그리고 Semaphore라는 2가지 Isolation 방법을 제공하고. 우리는 Thread & Thread Pool을 사용한다. 공식 Document에서는 Thread Isolation에 대해 "Clients (libraries, network calls, etc) execute on separate threads. This isolates them from the calling thread (Tomcat thread pool) so that the caller may “walk away” from a dependency call that is taking too long." 이라고 말한다.
+
+예를들어 어떠한 API Server를 호출하는 Thread는 따로 격리된다는 얘기이다. 즉 실행중인 Tomcat의 Thread Pool와 API Server를 호출하는 thread는 격리된다. 따라서 API 호출 thread에서 지연이 일어나더라도 'Tomcat의 Thread Pool과는 격리되어져 있으므로 다른 thread 작업을 실행 할 수 있다' 는 의미로 이해하면 될 것 같다. 
+
+어쨌든 본론으로 돌아가 우리가 사용할 앞에서 나왔던 zuul.ribbonIsolationStrategy와 zuul.threadPool을 보자. 
+우리는 앞서 말했듯이 Hystrix의 Isolation Strategy를 Thread & Thread Pool로 사용한다. 따라서 ribbonIsolationStrategy: THREAD로 설정하자.
+
+문제는 zuul의 IsolationStrategy를 Thread로 설정 시, 모든 라우팅 목록의 서비스들이 같은 Hystrix Thread Pool을 사용하게 된다는 것이다. 이렇게 진행한채로 Hystrix Dashboard의 Thread Pool 목록을 확인하면 "RibbonCommand" 라는 default Thread Pool을 볼 수 있을 것이다.
+
+뭐 지금은 story-service 하나뿐이라 딱히 상관은 없지만.. 추후에 service를 추가하기 위해 서라도 Thread Pool을 서비스 별로 나눠야 한다.
+따라서 threadPool.useSeparateThreadPools의 옵션을 true로 주자.
+
+```yml
+zuul:
+    ribbonIsolationStrategy: THREAD
+    threadPool:
+        useSeparateThreadPools: true
+```
+
+위에도 나와있지만 이런 형식이다. 이렇게 진행하면 HystrixThreadPoolKey는 serviceId가 default로 붙게 된다. 우리는 story-service로 Thread Pool이 생성될 것이고, 이를 변경하고 싶다면 threadPoolKeyPrefix를 설정하면 된다. 
+
+아래의 hystrix.command.story-service..부분도 같은 내용이므로 위 내용을 잘 파악하고 넘어가면 될 것 같다. 
 
 **참고**
 
 hystrix.command...timeoutInMilliseconds는 Ribbon의 각 timeout보다 커야 잘 동작한다. 
 (RibbonHystrixTimeoutException, Ribbon의 TimeooutException에 대해서는 더 알아봐야 한다.. 다음을 참고하자)
+* "Zuul, Ribbon and Hystrix timeout confusion" => https://github.com/spring-cloud/spring-cloud-netflix/issues/2606
 
-"Zuul, Ribbon and Hystrix timeout confusion" => https://github.com/spring-cloud/spring-cloud-netflix/issues/2606
+아래의 Hytrix의 wiki에는 Isonlation Strategy와 관련하여 Thread & Thread Pool의 장단점, Semaphore의 특징 등 자세히 설명 되있다. 꼭 참고하자!
+* "Netflix/Hystrix" => https://github.com/Netflix/Hystrix/wiki/How-it-Works#isolation
 
-그리고 ThreadPool, Isolation.. 이 부분 또한 더 알아봐야 한다..
-어쨌든 Dynamic Routing이 우선이므로 일단 넘어가자.
 
 ```yml	
 eureka:
@@ -284,7 +320,6 @@ Dynamic Routing 뿐만 아니라 Microservice가 실행되고 있는 각 Server�
 
 
 
-
 위 처럼 Hystrix Dashboard 하단의 Input box에 https://{Your-Zuul-Address}:4000/hystrix.stream, 그리고 아래 Delay를 입력하자.
 
 ```java
@@ -292,9 +327,9 @@ Dynamic Routing 뿐만 아니라 Microservice가 실행되고 있는 각 Server�
 
 Proxy opening connection to: http://13.125.247.1**:4000/hystrix.stream?delay=2000
 ```
-zuul이 실행중인 application의 log를 확인해 보면 proxy가 opening 되었단 로그를 볼 수 있다. 이 상태로 다시 curl을 날려보면 다음처럼 hystrix가 hystrixCommand가 설정된 method들에 대해 metric을 수집 하고 있는 것을 볼 수 있다.
+zuul이 실행중인 application의 log를 확인해 보면 proxy가 opening 되었단 로그를 볼 수 있다. 이 상태로 다시 curl을 날려보면 다음처럼 story-service의 Hystrix Thread Pool에 속한 HystrixCommand에 대해 metric을 수집 하고 있는 것을 볼 수 있다.
 
-![image](https://user-images.githubusercontent.com/20153890/41766425-f79adbb8-7641-11e8-8618-8ff650b99c88.png)
+![image](https://user-images.githubusercontent.com/20153890/41793198-5024648a-7696-11e8-92ab-13d2325d94c7.png)
 
 ## Conclusion ## 
 
@@ -306,3 +341,4 @@ zuul이 실행중인 application의 log를 확인해 보면 proxy가 opening 되
 * Router and Filter Zuul : https://cloud.spring.io/spring-cloud-netflix/multi/multi__router_and_filter_zuul.html
 * 우아한형제들 기술 블로그(배민 API GATEWAY - spring cloud zuul 적용기) : http://woowabros.github.io/r&d/2017/06/13/apigateway.html
 * spring-cloud-netflix : https://github.com/spring-cloud/spring-cloud-netflix
+* "Netflix/Hystrix" => https://github.com/Netflix/Hystrix/wiki/How-it-Works#isolation

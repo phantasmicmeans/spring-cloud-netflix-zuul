@@ -28,7 +28,8 @@ public class StoryServiceImpl implements StoryService {
 	public List<Story> findAllStory()
 	{
 		
-		Optional<List<Story>> maybeStoryIter = Optional.ofNullable(storyRepository.findAllStory());
+		Optional<List<Story>> maybeStoryIter = Optional.ofNullable(storyRepository.findAllStory(PageRequest.of(0,15)));
+
 		
 		return maybeStoryIter.get();
 

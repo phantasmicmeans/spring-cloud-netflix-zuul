@@ -17,7 +17,8 @@ public interface StoryRepository extends CrudRepository<Story, String> {
 
 
 	@Query("SELECT s FROM Story s ORDER BY s.story_id DESC")
-	List<Story> findAllStory();
+	List<Story> findAllStory(Pageable pageable);
+
 	
 	@Query("SELECT s FROM Story s WHERE s.ID=:ID ORDER BY s.story_id DESC")
 	List<Story> findStoryByUserIDs(@Param("ID") String ID,Pageable pageable);

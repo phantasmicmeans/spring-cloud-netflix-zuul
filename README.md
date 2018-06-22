@@ -8,7 +8,7 @@ Spring Cloud Netflix Zuul
 
 대용량 웹 서비스가 증가함에 따라 Microservice Architecture는 선택이 아니라 필수가 되어가고 있다. 기존 Monolithic Architecture와는 달리 Microservice Architecture는 작은 Microservice 단위로 나누어 시스템을 구축한다. 이러한 Microservice는 보통 하나 혹은 여러개의 API로 개발된다. 그렇다면 Microservice가 수백개 혹은 수천개까지 증가하면 수 많은 Endpoint와 공통 로직 등 이를 어떻게 관리해야 할까? 
 
-API Gateway는 수많은 백단의 API Server들의 Endpoint들을 단일화 하고, Authentication, Logging, Monitoring, Routing 등 여러 역할 을 수행 할 수 있다. 물론 Netflix의 Zuul은 이러한 기능들을 전부 제공하고 있다. Netflix의 Zuul뿐만 아니라 다른 API Gateway를 사용해도 앞서 말한 기능들을 제공받을 수 있을것이다.
+API Gateway는 수많은 백단의 API Server들의 Endpoint들을 단일화 하고, Authentication, Logging, Monitoring, Routing 등 여러 역할을 수행 할 수 있다. 물론 Netflix의 Zuul은 이러한 기능들을 전부 제공하고 있다. Netflix의 Zuul뿐만 아니라 다른 API Gateway를 사용해도 앞서 말한 기능들을 제공받을 수 있을것이다.
 
 그러나 Zuul은 많은 트래픽과 이로인해 발생하게 될 여러 이슈들에 대해 신속히 대응할 수 있도록 다양한 Filter를 제공한다. 
 또한 Netflix의 Zuul은 다른 Netflix OSS의 Component들과 결합이 되었을 때 활용도가 증가한다. 
@@ -33,7 +33,8 @@ API Gateway는 수많은 백단의 API Server들의 Endpoint들을 단일화 하
 ## 1. Dependency
 
 Zuul, Eureka-client 의존성을 추가한다. 또한 Hystrix Dashboard를 추가한다.
-```yml		             
+
+```xml		             
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-actuator</artifactId>
@@ -119,8 +120,8 @@ zuul:
 
 설정파일을 잘 보면 쉽게 이해할 수 있다. 먼저 ignored-service와 prefix이다.
 
-* ignored-service: "*" => zuul의 라우팅 목록 중 story-service를 제외하고는 ignore한다.*
-* prifix: /api => Zuul에 의해 routing되는 모든 service들의 Endpoint를 /api/~ 로 묶는다.
+* ignored-service => zuul의 라우팅 목록 중 story-service를 제외하고는 ignore한다.*
+* prifix => Zuul에 의해 routing되는 모든 service들의 Endpoint를 /api/~ 로 묶는다.
 
 그리고 zuul의 routing 목록 중  /story(zuul.routes.story-service.path)로 들어오는 Http call은 story-servie(zuul.routes.story-service.serviceId) forwarding 된다. 이 serviceId는 우리가 routing 시킬 Eureka-Client의 serviceId를 입력하면 된다. 그렇다면 5번째 라인의 zuul.routes.story-service는 어디서 정의될까? 이제 아래를 보자.
 
@@ -144,8 +145,8 @@ story-service:
         MaxConnectionsPerHost: 100
 ```
 
-위의 zuul.routes.story-service는 아래 story-service에서 정의된다. 그리고 이 story-service는 Ribbon을 이용해 찾는다. 이 부분을 잘 봐야 한다. 
-그렇다면 이 Ribbon은 story-service가 있는 Server List들을 어디서 가져올까? 일일이 Server List를 등록해줘야 할까? 아니다. 앞서 설명했듯이 Eureka Registry로 부터 story-service가 실행중인 Server List를 가져오면 된다. 이렇게 되면 Loadbalancer인 Ribbon에 Server List를 추가할 필요가 없다. **NIWSServerListClassName: com.netflix.niws.loadbalancer.DiscoveryEnabledNIWSServerList** 를 이용해 Eureka 정보를 사용하면 된다는 얘기이다.
+위의 zuul.routes.story-service는 아래 story-service에서 정의된다. 그리고 이 story-service의 Server List는 Ribbon을 이용해 찾는다. 이 부분을 잘 봐야 한다. 
+그렇다면 이 Ribbon은 story-service가 있는 Server List들을 어디서 가져올까? 분명 yaml파일을 전부 뒤져봐도 Server List는 찾아 볼 수 없다. 그렇다면 지금부터 일일이 Server List를 등록해줘야 할까? 아니다. 앞서 설명했듯이 Eureka Registry로 부터 story-service가 실행중인 Server List를 가져오면 된다. 이렇게 되면 Loadbalancer인 Ribbon에 Server List를 추가할 필요가 없다. **NIWSServerListClassName: com.netflix.niws.loadbalancer.DiscoveryEnabledNIWSServerList** 를 이용해 Eureka 정보를 사용하면 된다는 얘기이다.
 
 **참고**
 hystrix.command...timeoutInMilliseconds는 Ribbon의 각 timeout보다 커야 잘 동작한다. 
@@ -168,8 +169,6 @@ eureka:
 ```
 
 이 부분은 Zuul 또한 Eureka Client로 등록하는 부분이다.
-
-
 
 
 

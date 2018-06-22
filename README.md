@@ -25,12 +25,14 @@ API Gateway는 수많은 백단의 API Server들의 Endpoint들을 단일화 하
 
 # Before We Start 
 
-우리는 고정 ip가 있는 3개의 Server가 필요하다. 그리고 이 3개의 Server들은 다음처럼 활용할 것이다.
+우리는 고정 ip가 있는 3개 혹은 4개의 Server가 필요하다. 그리고 이 Server들은 다음처럼 활용할 것이다.
 
 1. API Gateway Zuul- (Eureka + Ribbon + Hystrix)
 2. micro-service.1(Spring Boot Microservice(Eureka Client))
 3. micro-service.2(Spring Boot Microservice(Eureka Client))
-(2,3번은 각자 다른 서버에 배포되는 같은 서비스이다.)
+4. Eureka-Server
+
+2,3번은 각자 다른 서버에 배포되는 같은 서비스이다. Eureka Server는 1,2,3번 Server중 하나를 이용해 구축해도 된다. 
 
 그럼 먼저 API Gateway를 준비해보자.
 

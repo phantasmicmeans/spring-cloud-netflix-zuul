@@ -7,7 +7,7 @@ Spring Cloud Netflix Zuul
 
 # Overview
 
-대용량 웹 서비스가 증가함에 따라 Microservice Architecture는 선택이 아니라 필수가 되어가고 있다. 기존 Monolithic Architecture와는 달리 Microservice Architecture는 작은 Microservice 단위로 나누어 시스템을 구축한다. 이러한 Microservice는 보통 하나 혹은 여러 개의 API로 개발된다. 그렇다면 Microservice가 수백 개 혹은 수천 개까지 증가하면 수많은 Endpoint와 공통 로직 등 이를 어떻게 관리해야 할까? 
+대용량 웹 서비스가 증가함에 따라 Microservice Architecture는 선택이 아니라 필수가 되어가고 있다. 기존 Monolithic Architecture와는 달리 Microservice Architecture는 작은 Microservice 단위로 나누어 시스템을 구축한다. 이러한 Microservice는 보통 하나 혹은 여러 개의 API로 개발된다. 그렇다면 Microservice가 수백 개 혹은 수천 개까지 증가할 때 수많은 Endpoint와 공통 로직 등 이를 어떻게 관리해야 할까? 
 
 API Gateway는 수많은 백 단의 API Server들의 Endpoint들을 단일화하고, Authentication, Logging, Monitoring, Routing 등 여러 역할을 수행 할 수 있다. 물론 Netflix의 Zuul은 이러한 기능들을 전부 제공하고 있다. Netflix의 Zuul뿐만 아니라 다른 API Gateway를 사용해도 앞서 말한 기능들을 제공받을 수 있을것이다.
 
@@ -34,7 +34,7 @@ API Gateway는 수많은 백 단의 API Server들의 Endpoint들을 단일화하
 
 2,3번은 각자 다른 서버에 배포되는 같은 서비스이다. Eureka Server는 1,2,3번 Server 중 하나를 이용해 구축해도 된다. 
 
-필자는 AWS ec-2 instance(Centos7)를 이용했다. 물리적인 서버가 있다면 그걸 사용하면 되고, AWS ec2 Free tier를 사용해도 무방하다.
+필자는 aws ec2 centos7을 활용했고, azure,gcp 등 원하는 cloud platform을 활용하던지, 물리적인 서버를 활용해도 상관없다.  
 
 (들어가기에 앞서 다음 레퍼런스를 꼭 참고하자)
 * Spring-Cloud-Netflix-Eureka-Tutorial => https://github.com/phantasmicmeans/Spring-Cloud-Netflix-Eureka-Tutorial

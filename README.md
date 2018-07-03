@@ -80,12 +80,14 @@ Zuul, Eureka-client 의존성을 추가한다. 또한 Hystrix Dashboard를 추�
 		<artifactId>spring-boot-starter-test</artifactId>
 		<scope>test</scope>
 	</dependency>
+
 ```
 
 
-## 3. Include Zuul
+## 2. Include Zuul
 
 ```java
+
 @EnableEurekaClient
 @SpringBootApplication
 @EnableHystrixDashboard
@@ -97,7 +99,9 @@ public class ApiGatewayApplication {
 	}
 	
 }
+
 ```
+
 EurekaClient로 만들기 위해 @EnableEurekaClient annotataion, 그리고 Hystrix Dashboard를 사용하기 위해 @EnableHystrixDashboard annotation을 추가한다.
 
 Hystrix의 장점중 하나는 각 HystrixCommand 에 대해 metric을 수집하는 것이다. Hystrix Dashboard는 각 circuit breaker에 대한 상태를 보여준다. 이를 활용하려면 @EnableHystrixDashboard annotation을 main class에 추가하면 된다. 그리고 ~/hystrix 로 접속 시 각 Hystrix Client들의 상태를 볼 수 있다.
@@ -110,7 +114,9 @@ Hystrix의 장점중 하나는 각 HystrixCommand 에 대해 metric을 수집하
 ## 2. Configuration
 
 **1. bootstrap.yml**
+
 ```yml	
+
 spring:
     application:
         name: zuul-service
@@ -121,6 +127,7 @@ application.name을 정한다.
 **2. application.yml**
 
 ```yml	
+
 zuul:
     ignored-service: "*" 
     prefix: /api
@@ -132,7 +139,9 @@ zuul:
     ribbonIsolationStrategy: THREAD
     threadPool:
         useSeparateThreadPools: true
+	
 ```
+
 설정 파일을 잘 보면 이해할 수 있다. zuul.ribbonIsolationStrategy와 zuul.threadPool은 아래에서 설명하겠다.
 그럼 먼저 ignored-service와 prefix이다.
 
@@ -142,6 +151,7 @@ zuul:
 zuul의 routing 목록 중  /story(zuul.routes.story-service.path)로 들어오는 Http call은 story-servie(zuul.routes.story-service.serviceId)로 forwarding 된다. 이 serviceId에 우리가 routing 시킬 Eureka-Client의 serviceId를 입력하면 된다. 그렇다면 5번째 라인의 zuul.routes.story-service는 어디서 정의될까? 이제 아래를 보자.
 
 ```yml	
+
 hystrix:
     command:
         story-service:
@@ -186,6 +196,7 @@ Hystrix는 Thread & Thread Pool, 그리고 Semaphore라는 2가지 Isolation 방
 따라서 threadPool.useSeparateThreadPools의 옵션을 true로 주자.
 
 ```yml
+
 zuul:
     ribbonIsolationStrategy: THREAD
     threadPool:
@@ -207,6 +218,7 @@ hystrix.command...timeoutInMilliseconds는 Ribbon의 각 timeout보다 커야 �
 
 
 ```yml	
+
 eureka:
     client:
         healthcheck: true 
@@ -292,17 +304,19 @@ STORY-SERVICE인 instance가 2개 존재한다. 같은 service이지만 instance
 &nbsp;
 
 ```sh	
-sangmin@Mint-SM ~ $ curl -X GET http://13.125.247.1**:4000/api/story-service/storys
-micro-service1
-
-sangmin@Mint-SM ~ $ curl -X GET http://13.125.247.1**:4000/api/story-service/storys
-micro-service2
 
 sangmin@Mint-SM ~ $ curl -X GET http://13.125.247.1**:4000/api/story-service/storys
 micro-service1
 
 sangmin@Mint-SM ~ $ curl -X GET http://13.125.247.1**:4000/api/story-service/storys
 micro-service2
+
+sangmin@Mint-SM ~ $ curl -X GET http://13.125.247.1**:4000/api/story-service/storys
+micro-service1
+
+sangmin@Mint-SM ~ $ curl -X GET http://13.125.247.1**:4000/api/story-service/storys
+micro-service2
+
 ```
 
 Dynamic Routing 뿐만 아니라 Microservice가 실행되고 있는 각 Server의 hostname이 Load balancing되며 출력 되는 모습을 볼 수 있다. 
@@ -323,9 +337,11 @@ Dynamic Routing 뿐만 아니라 Microservice가 실행되고 있는 각 Server�
 위 처럼 Hystrix Dashboard 하단의 Input box에 https://{Your-Zuul-Address}:4000/hystrix.stream, 그리고 아래 Delay를 입력하자.
 
 ```java
+
 2018-06-22 08:27:51.905  INFO 1423 --- [io-4000-exec-10] ashboardConfiguration$ProxyStreamServlet : 
 
 Proxy opening connection to: http://13.125.247.1**:4000/hystrix.stream?delay=2000
+
 ```
 zuul이 실행중인 application의 log를 확인해 보면 proxy가 opening 되었단 로그를 볼 수 있다. 이 상태로 다시 curl을 날려보면 다음처럼 story-service의 Hystrix Thread Pool에 속한 HystrixCommand에 대해 metric을 수집 하고 있는 것을 볼 수 있다.
 

@@ -139,7 +139,6 @@ zuul:
     ribbonIsolationStrategy: THREAD
     threadPool:
         useSeparateThreadPools: true
-	
 ```
 
 설정 파일을 잘 보면 이해할 수 있다. zuul.ribbonIsolationStrategy와 zuul.threadPool은 아래에서 설명하겠다.
@@ -347,7 +346,7 @@ zuul이 실행중인 application의 log를 확인해 보면 proxy가 opening 되
 
 ![image](https://user-images.githubusercontent.com/20153890/41793198-5024648a-7696-11e8-92ab-13d2325d94c7.png)
 
-## Conclusion ## 
+## Conclusion 
 
 이상으로 Netflix Zuul(Eureka+Ribbon+Hystrix)을 활용해 Dynamic Routing, 그리고 Client Side에서의 Loadbalncing까지 진행해 보았다.
 다음은 Docker Swarm(Docker Container Clustering Tool)와 Spring Cloud Netflix의 Component를 결합하여 Netflix OSS의 장점을 살리고 Clustering까지 할 수 있는 튜토리얼을 진행해 보려한다.

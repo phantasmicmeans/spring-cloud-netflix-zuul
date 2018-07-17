@@ -10,6 +10,4 @@ public interface StoryService {
 	List<Story> findStoryById(String ID);
 	Boolean saveStory(Story story);
 	Boolean deleteStory(String ID);
-	
-	
-}
+	}

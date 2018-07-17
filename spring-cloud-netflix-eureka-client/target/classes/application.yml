@@ -1,0 +1,14 @@
+server:
+    port: 8768
+
+eureka:
+    client:
+        healthcheck: true 
+        fetch-registry: true
+
+        serviceUrl:
+            defaultZone: http://{Your-Eukeka-Server-Address}:8761/eureka/
+    instance:
+        instance-id: ${spring.application.name}:${spring.application.instance_id:${random.value}}
+        preferIpAddress: true
+

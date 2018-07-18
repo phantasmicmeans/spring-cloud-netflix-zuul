@@ -4,13 +4,10 @@ package com.story.service;
 import java.util.List;
 import java.util.Optional;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 
-import com.google.common.collect.Lists;
 import com.story.domain.Story;
 import com.story.repository.StoryRepository;
 
@@ -18,8 +15,6 @@ import com.story.repository.StoryRepository;
 @Service("storyService")
 public class StoryServiceImpl implements StoryService {
 
-	
-	private Logger logger = LoggerFactory.getLogger(this.getClass());
 	
 	@Autowired
 	private StoryRepository storyRepository;
@@ -37,17 +32,12 @@ public class StoryServiceImpl implements StoryService {
 	
 	@Override
 	public Optional<List<Story>> findStoryById(String ID)
-	{
-		
+	{	
 		try {
 			return Optional.of(storyRepository.findStoryByUserIDs(ID, PageRequest.of(0, 5)));			
 		}
 		catch(Exception e){ return null; }
-		/*
-		Optional<List<Story>> maybeStory = Optional.ofNullable(storyRepository.findStoryByUserIDs(ID, PageRequest.of(0, 5)));
 
-		return maybeStory.get();
-		*/ 
 	}
 	
 	@Override
@@ -55,16 +45,12 @@ public class StoryServiceImpl implements StoryService {
 	{
 		try {
 			
-			storyRepository.save(Optional.ofNullable(story).get());
-			
-			logger.info("saved");
-			
+			storyRepository.save(Optional.of(story).get());
+						
 			return true;
 			
 		}catch(Exception e)
-		{
-			logger.info("Nothing to save");
-			
+		{			
 			return false;
 		}
 	}
@@ -75,15 +61,11 @@ public class StoryServiceImpl implements StoryService {
 		try {
 			
 			storyRepository.deleteStoryByUserId(ID);
-			
-			logger.info("removed");
-			
+						
 			return true;
 			
 		}catch(Exception e)
-		{
-			logger.info("Nothing to remove");
-			
+		{			
 			return false;
 			
 		}

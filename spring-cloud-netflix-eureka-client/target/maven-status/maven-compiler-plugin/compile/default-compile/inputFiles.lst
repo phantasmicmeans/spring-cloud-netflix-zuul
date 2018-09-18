@@ -1,6 +1,0 @@
-/home/sangmin/git/spring-cloud-netflix-zuul/spring-cloud-netflix-eureka-client/src/main/java/com/story/repository/StoryRepository.java
-/home/sangmin/git/spring-cloud-netflix-zuul/spring-cloud-netflix-eureka-client/src/main/java/com/story/service/StoryService.java
-/home/sangmin/git/spring-cloud-netflix-zuul/spring-cloud-netflix-eureka-client/src/main/java/com/story/rest/StoryController.java
-/home/sangmin/git/spring-cloud-netflix-zuul/spring-cloud-netflix-eureka-client/src/main/java/com/story/domain/Story.java
-/home/sangmin/git/spring-cloud-netflix-zuul/spring-cloud-netflix-eureka-client/src/main/java/com/story/service/StoryServiceImpl.java
-/home/sangmin/git/spring-cloud-netflix-zuul/spring-cloud-netflix-eureka-client/src/main/java/com/story/StoryserviceApplication.java
